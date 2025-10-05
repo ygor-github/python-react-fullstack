@@ -11,9 +11,11 @@
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
@@ -22,6 +24,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -54,10 +57,12 @@
 
 .word-table th {
   padding: 12px 10px;
-  border-bottom: 2px solid #555; /* Borde oscuro para contraste */
+  border-bottom: 2px solid #555;
+  /* Borde oscuro para contraste */
   font-size: 0.9em;
   font-weight: 600;
-  color: #999; /* Texto gris claro */
+  color: #999;
+  /* Texto gris claro */
   text-transform: uppercase;
 }
 
@@ -78,20 +83,46 @@
 /* Estilos de Cebra (Zebra striping) */
 .word-table .even-row {
   /* Fondo muy sutilmente diferente al de la card, o transparente */
-  background-color: transparent; 
+  background-color: transparent;
 }
 
 .word-table .odd-row {
   /* Fondo sutilmente diferente para filas impares */
-  background-color: rgba(255, 255, 255, 0.03); 
+  background-color: rgba(255, 255, 255, 0.03);
 }
 
 .word-text {
   font-weight: bold;
-  color: #646cff; /* Usamos el color de enlace/logo principal para destacar */
+  color: #646cff;
+  /* Usamos el color de enlace/logo principal para destacar */
 }
 
 .word-timestamp {
   font-size: 0.85em;
   color: #ccc;
+}
+
+/* Estilo general para la columna de acción en la tabla */
+.word-table .word-action {
+  text-align: center;
+}
+
+/* Estilo para el botón de eliminación */
+.delete-btn {
+  padding: 5px 10px;
+  font-size: 0.9em;
+  font-weight: 500;
+  color: #dc3545;
+  /* Rojo de peligro */
+  background-color: transparent;
+  border: 1px solid #dc3545;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.delete-btn:hover {
+  background-color: #dc3545;
+  color: #fff;
+  border-color: #dc3545;
 }

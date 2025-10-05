@@ -2,13 +2,13 @@ import { useState, useEffect, useCallback } from 'react'
 // Restauramos las importaciones (si tu entorno local las puede resolver)
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
-import './App.css' 
+import './App.css'
 
 function App() {
   const [currentTime, setCurrentTime] = useState(0);
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
-  
+
   const [wordInput, setWordInput] = useState('');
   const [saveMessage, setSaveMessage] = useState('');
   const [wordList, setWordList] = useState([]);
@@ -19,21 +19,21 @@ function App() {
   const fetchWords = useCallback(() => {
     if (token) {
       const WORDS_URL = 'http://localhost:5000/api/words';
-      
+
       fetch(WORDS_URL, {
         method: 'GET',
         headers: { 'Authorization': `Bearer ${token}` }
       })
-      .then(response => response.ok ? response.json() : Promise.reject('Failed to fetch words'))
-      .then(data => setWordList(data))
-      .catch(error => console.error("Error fetching word list:", error));
+        .then(response => response.ok ? response.json() : Promise.reject('Failed to fetch words'))
+        .then(data => setWordList(data))
+        .catch(error => console.error("Error fetching word list:", error));
     }
   }, [token]);
 
 
   const handleWordSubmit = (e) => {
-    e.preventDefault(); 
-    setSaveMessage('Saving...'); 
+    e.preventDefault();
+    setSaveMessage('Saving...');
     if (!token) {
       setSaveMessage('Error: Not logged in (missing token).');
       return;
@@ -44,22 +44,60 @@ function App() {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ text: wordInput })
     })
-    .then(response => response.json())
-    .then(data => {
-      if (data.message.includes('saved successfully')) {
-        setSaveMessage(`Success: ${data.word} saved!`);
-        setWordInput('');
-        fetchWords();
-      } else {
-        setSaveMessage(`Error: ${data.message}`);
+      .then(response => response.json())
+      .then(data => {
+        if (data.message.includes('saved successfully')) {
+          setSaveMessage(`Success: ${data.word} saved!`);
+          setWordInput('');
+          fetchWords();
+        } else {
+          setSaveMessage(`Error: ${data.message}`);
+        }
+      })
+      .catch(error => {
+        console.error("Error saving word:", error);
+        setSaveMessage('Fatal error connecting to API.');
+      });
+
+  };
+  const handleDeleteWord = (wordId) => {
+    // NUEVA LÓGICA: Pedir confirmación antes de eliminar
+    const isConfirmed = window.confirm("¿Estás seguro de que quieres eliminar esta palabra?");
+
+    if (!isConfirmed) {
+      // Si el usuario cancela, salimos de la función
+      return;
+    }
+
+    if (!token) {
+      console.error('Error: Not logged in (missing token).');
+      return;
+    }
+
+    // El endpoint usa el ID de la palabra en la URL
+    const DELETE_URL = `http://localhost:5000/api/words/${wordId}`;
+
+    fetch(DELETE_URL, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
       }
     })
-    .catch(error => {
-      console.error("Error saving word:", error);
-      setSaveMessage('Fatal error connecting to API.');
-    });
+      .then(response => {
+        // En una operación DELETE exitosa, el backend usualmente retorna 204 No Content
+        if (response.status === 204) {
+          console.log(`Word ID ${wordId} deleted successfully.`);
+          fetchWords(); // Actualiza la lista
+        } else if (!response.ok) {
+          throw new Error('Failed to delete word, status: ' + response.status);
+        }
+      })
+      .catch(error => {
+        console.error("Error deleting word:", error);
+      });
+
   };
-  
+
   // --- EFECTOS (Hooks) ---
 
   useEffect(() => {
@@ -74,15 +112,15 @@ function App() {
     if (token) {
       const TIME_URL = 'http://localhost:5000/api/time';
       fetch(TIME_URL, { headers: { 'Authorization': `Bearer ${token}` } })
-      .then(response => response.ok ? response.json() : Promise.reject('Time fetch failed'))
-      .then(data => { setCurrentTime(data.time); setLoading(false); })
-      .catch(error => setLoading(false));
+        .then(response => response.ok ? response.json() : Promise.reject('Time fetch failed'))
+        .then(data => { setCurrentTime(data.time); setLoading(false); })
+        .catch(error => setLoading(false));
     }
   }, [token]);
 
   useEffect(() => {
     fetchWords();
-  }, [fetchWords]); 
+  }, [fetchWords]);
 
 
   // --- RENDERIZADO DE LA UI ---
@@ -97,7 +135,7 @@ function App() {
         </a>
       </div>
       <h1>Flask + React Full-Stack App</h1>
-      
+
       {loading ? (
         <p>Loading API data (logging in...)</p>
       ) : (
@@ -122,13 +160,13 @@ function App() {
         </form>
         {saveMessage && <p style={{ marginTop: '10px', color: saveMessage.includes('Error') ? 'red' : 'green' }}>{saveMessage}</p>}
       </div>
-      
+
       {/* --- LISTA DE PALABRAS (TABLA) --- */}
       <div className="card word-list-container">
         <h3>Saved Words ({wordList.length})</h3>
-        
+
         {token && wordList.length === 0 && loading ? (
-             <p>Loading word list...</p>
+          <p>Loading word list...</p>
         ) : wordList.length === 0 ? (
           <p>No words saved yet.</p>
         ) : (
@@ -138,6 +176,7 @@ function App() {
               <tr>
                 <th>WORD</th>
                 <th>SAVED AT</th>
+                <th>ACTION</th>
               </tr>
             </thead>
             <tbody>
@@ -145,13 +184,21 @@ function App() {
                 <tr key={word.id} className={index % 2 === 0 ? 'even-row' : 'odd-row'}>
                   <td className="word-text">{word.text}</td>
                   <td className="word-timestamp">{word.timestamp}</td>
+                  <td className="word-action"> {/* <-- NUEVA CELDA */}
+                    <button
+                      className="delete-btn"
+                      onClick={() => handleDeleteWord(word.id)}
+                    >
+                      🗑️ Delete
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         )}
       </div>
-      
+
       <p className="read-the-docs">
         Click on the Vite and React logos to learn more
       </p>

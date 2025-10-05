@@ -101,6 +101,26 @@ def get_words():
         
     return jsonify(output), 200
 
+@app.route('/api/words/<int:word_id>', methods=['DELETE'])
+@jwt_required()
+def delete_word(word_id):
+    """ Elimina una palabra de la base de datos por su ID. Requiere token. """
+    word_to_delete = Word.query.get(word_id)
+
+    if not word_to_delete:
+        return jsonify({"message": f"Word with ID {word_id} not found"}), 404
+
+    try:
+        db.session.delete(word_to_delete)
+        db.session.commit()
+        # 204 No Content es la respuesta estándar para una eliminación exitosa
+        return '', 204 
+    except Exception as e:
+        db.session.rollback()
+        print(f"Database error during deletion: {e}")
+        return jsonify({"message": "Could not delete word due to a database error"}), 500
+
+
 
 # --- Modo de Desarrollo ---
 if __name__ == '__main__':
