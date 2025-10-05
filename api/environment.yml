@@ -8,3 +8,6 @@ dependencies:
     - Flask
     - Flask-CORS
     - gunicorn
+    - flask-sqlalchemy
+    - psycopg2-binary
+    - flask-migrate 

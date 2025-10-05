@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:latest
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: flask_user
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: words_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # <--- Uso del volumen
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: ./api
+    container_name: flask_backend
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://flask_user:mysecretpassword@db:5432/words_db
+      FLASK_APP: app.py
+      FLASK_ENV: development
+    volumes:
+      - ./api:/app # Mapeo de volumen para desarrollo local
+
+# --- Secciones que faltaban ---
+
+volumes:
+  postgres_data: # <--- Declaración del volumen, lo hace persistente
