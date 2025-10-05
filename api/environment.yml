@@ -10,4 +10,5 @@ dependencies:
     - gunicorn
     - flask-sqlalchemy
     - psycopg2-binary
-    - flask-migrate 
+    - flask-migrate
+    - flask-jwt-extended 
